@@ -7,6 +7,7 @@ from tensorflow.keras import datasets, layers, models
 batch_size = 200
 buffer_size = 2000
 num_epochs = 200
+method = 'func'
 
 (train_images, train_labels), (_, _) = datasets.mnist.load_data()
 
@@ -16,14 +17,25 @@ train_images = train_images / 255.0
 
 train_dataset = tf.data.Dataset.from_tensor_slices((train_images, train_labels)).shuffle(buffer_size).batch(batch_size)
 
-model = models.Sequential()
-model.add(SpectralNormalization(layers.Conv2D(32, (3, 3), activation='relu')))
-model.add(layers.MaxPooling2D((2, 2)))
-model.add(SpectralNormalization(layers.Conv2D(64, (3, 3), activation='relu')))
-model.add(layers.MaxPooling2D((2, 2)))
-model.add(layers.Flatten())
-model.add(layers.Dense(64, activation='relu'))
-model.add(layers.Dense(10, activation='softmax'))
+if method == 'func':
+    inputs = layers.Input(shape=(28,28,1))
+    x = SpectralNormalization(layers.Conv2D(32, (3, 3), activation='relu'))(inputs)
+    x = layers.MaxPooling2D((2, 2))(x)
+    x = SpectralNormalization(layers.Conv2D(64, (3, 3), activation='relu'))(x)
+    x = layers.MaxPooling2D((2, 2))(x)
+    x = layers.Flatten()(x)
+    x = layers.Dense(64, activation='relu')(x)
+    output = layers.Dense(10, activation='softmax')(x)
+    model = models.Model(inputs=inputs, outputs=output)
+else:
+    model = models.Sequential()
+    model.add(SpectralNormalization(layers.Conv2D(32, (3, 3), activation='relu')))
+    model.add(layers.MaxPooling2D((2, 2)))
+    model.add(SpectralNormalization(layers.Conv2D(64, (3, 3), activation='relu')))
+    model.add(layers.MaxPooling2D((2, 2)))
+    model.add(layers.Flatten())
+    model.add(layers.Dense(64, activation='relu'))
+    model.add(layers.Dense(10, activation='softmax'))
 
 
 def loss(model, x, y):
@@ -59,7 +71,7 @@ for epoch in range(num_epochs):
     train_loss_results.append(epoch_loss_avg.result())
     train_accuracy_results.append(epoch_accuracy.result())
 
-    if epoch % 50 == 0:
+    if epoch % 2 == 0:
         print("Epoch {:03d}: Loss: {:.3f}, Acc: {:.3%}".format(epoch,
                                                                epoch_loss_avg.result(),
                                                                epoch_accuracy.result()))

@@ -2,7 +2,8 @@
 Spectral Normalization implemented as Tensorflow 2.0
 
 ## Run Test Code
-TODO: main.py -> simple DCGAN model
+- [ ] Convert simpole conv2d model to DCGAN
+This is currently a test code using a simple image classification model.
 ```
 python main.py
 ```
@@ -11,13 +12,21 @@ python main.py
 ![](./images/algorithm.png)
 
 ## How to use
-1. Sequential Method
+1. Sequential API 
 ```
 model = models.Sequential()
 model.add(SpectralNormalization(layers.Conv2D(32, (3, 3), activation='relu')))
 ...
 ```
-2. Class Method
+
+2. Functional API
+```
+inputs = layers.Input(shape=(28,28,1))
+x = SpectralNormalization(layers.Conv2D(32, (3, 3), activation='relu'))(inputs)
+...
+````
+
+3. Custom Layer Method 
 ```
 class Custom(tf.keras.layers.Layer):
     def __init__(self):
