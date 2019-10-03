@@ -2,7 +2,7 @@
 Spectral Normalization implemented as Tensorflow 2.0
 
 ## Run Test Code
-- [ ] Convert simpole conv2d model to DCGAN
+- [ ] Convert simple conv2d model to DCGAN model
 
 This is currently a test code using a simple image classification model.
 ```
