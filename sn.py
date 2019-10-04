@@ -5,7 +5,7 @@ class SpectralNormalization(tf.keras.layers.Wrapper):
     def __init__(self, layer, iteration=1, eps=1e-12, training=True, **kwargs):
         self.iteration = iteration
         self.eps = eps
-        self.training = training
+        self.do_power_iteration = training
         if not isinstance(layer, tf.keras.layers.Layer):
             raise ValueError(
                 'Please initialize `TimeDistributed` layer with a '
@@ -17,7 +17,12 @@ class SpectralNormalization(tf.keras.layers.Wrapper):
 
         self.w = self.layer.kernel
         self.w_shape = self.w.shape.as_list()
-        print(self.w_shape)
+
+        self.v = self.add_variable(shape=(1, self.w_shape[0] * self.w_shape[1] * self.w_shape[2]),
+                                   initializer=tf.initializers.TruncatedNormal(stddev=0.02),
+                                   trainable=False,
+                                   name='sn_v',
+                                   dtype=tf.float32)
 
         self.u = self.add_variable(shape=(1, self.w_shape[-1]),
                                    initializer=tf.initializers.TruncatedNormal(stddev=0.02),
@@ -37,9 +42,9 @@ class SpectralNormalization(tf.keras.layers.Wrapper):
         w_reshaped = tf.reshape(self.w, [-1, self.w_shape[-1]])
         
         u_hat = self.u
-        v_hat = tf.random.truncated_normal([1, w_reshaped.shape.as_list()[0]])  # init v vector
+        v_hat = self.v  # init v vector
 
-        if self.training:
+        if self.do_power_iteration:
             for _ in range(self.iteration):
                 v_ = tf.matmul(u_hat, tf.transpose(w_reshaped))
                 v_hat = v_ / (tf.reduce_sum(v_**2)**0.5 + self.eps)
@@ -49,6 +54,7 @@ class SpectralNormalization(tf.keras.layers.Wrapper):
 
         sigma = tf.matmul(tf.matmul(v_hat, w_reshaped), tf.transpose(u_hat))
         self.u.assign(u_hat)
+        self.v.assign(v_hat)
 
         self.layer.kernel.assign(self.w / sigma)
 

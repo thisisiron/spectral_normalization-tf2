@@ -71,7 +71,6 @@ for epoch in range(num_epochs):
     train_loss_results.append(epoch_loss_avg.result())
     train_accuracy_results.append(epoch_accuracy.result())
 
-    if epoch % 2 == 0:
-        print("Epoch {:03d}: Loss: {:.3f}, Acc: {:.3%}".format(epoch,
-                                                               epoch_loss_avg.result(),
-                                                               epoch_accuracy.result()))
+    print("Epoch {:03d}: Loss: {:.3f}, Acc: {:.3%}".format(epoch,
+                                                           epoch_loss_avg.result(),
+                                                           epoch_accuracy.result()))
