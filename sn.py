@@ -18,17 +18,17 @@ class SpectralNormalization(tf.keras.layers.Wrapper):
         self.w = self.layer.kernel
         self.w_shape = self.w.shape.as_list()
 
-        self.v = self.add_variable(shape=(1, self.w_shape[0] * self.w_shape[1] * self.w_shape[2]),
-                                   initializer=tf.initializers.TruncatedNormal(stddev=0.02),
-                                   trainable=False,
-                                   name='sn_v',
-                                   dtype=tf.float32)
+        self.v = self.add_weight(shape=(1, self.w_shape[0] * self.w_shape[1] * self.w_shape[2]),
+                                 initializer=tf.initializers.TruncatedNormal(stddev=0.02),
+                                 trainable=False,
+                                 name='sn_v',
+                                 dtype=tf.float32)
 
-        self.u = self.add_variable(shape=(1, self.w_shape[-1]),
-                                   initializer=tf.initializers.TruncatedNormal(stddev=0.02),
-                                   trainable=False,
-                                   name='sn_u',
-                                   dtype=tf.float32)
+        self.u = self.add_weight(shape=(1, self.w_shape[-1]),
+                                 initializer=tf.initializers.TruncatedNormal(stddev=0.02),
+                                 trainable=False,
+                                 name='sn_u',
+                                 dtype=tf.float32)
 
         super(SpectralNormalization, self).build()
 
