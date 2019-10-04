@@ -2,9 +2,10 @@ import tensorflow as tf  # TF 2.0
 
 
 class SpectralNormalization(tf.keras.layers.Wrapper):
-    def __init__(self, layer, iteration=1, eps=1e-12, **kwargs):
+    def __init__(self, layer, iteration=1, eps=1e-12, training=True, **kwargs):
         self.iteration = iteration
         self.eps = eps
+        self.training = training
         if not isinstance(layer, tf.keras.layers.Layer):
             raise ValueError(
                 'Please initialize `TimeDistributed` layer with a '
@@ -16,6 +17,7 @@ class SpectralNormalization(tf.keras.layers.Wrapper):
 
         self.w = self.layer.kernel
         self.w_shape = self.w.shape.as_list()
+        print(self.w_shape)
 
         self.u = self.add_variable(shape=(1, self.w_shape[-1]),
                                    initializer=tf.initializers.TruncatedNormal(stddev=0.02),
@@ -28,22 +30,27 @@ class SpectralNormalization(tf.keras.layers.Wrapper):
     def call(self, inputs):
         self.update_weights()
         output = self.layer(inputs)
+        self.restore_weights()  # Restore weights because of this formula "W = W - alpha * W_SN`"
         return output
     
     def update_weights(self):
         w_reshaped = tf.reshape(self.w, [-1, self.w_shape[-1]])
         
         u_hat = self.u
-        v_hat = None
+        v_hat = tf.random.truncated_normal([1, w_reshaped.shape.as_list()[0]])  # init v vector
 
-        for i in range(self.iteration):
-            v_ = tf.matmul(u_hat, tf.transpose(w_reshaped))
-            v_hat = v_ / (tf.reduce_sum(v_**2)**0.5 + self.eps)
+        if self.training:
+            for _ in range(self.iteration):
+                v_ = tf.matmul(u_hat, tf.transpose(w_reshaped))
+                v_hat = v_ / (tf.reduce_sum(v_**2)**0.5 + self.eps)
 
-            u_ = tf.matmul(v_hat, w_reshaped)
-            u_hat = u_ / (tf.reduce_sum(u_**2)**0.5 + self.eps)
+                u_ = tf.matmul(v_hat, w_reshaped)
+                u_hat = u_ / (tf.reduce_sum(u_**2)**0.5 + self.eps)
 
         sigma = tf.matmul(tf.matmul(v_hat, w_reshaped), tf.transpose(u_hat))
         self.u.assign(u_hat)
 
         self.layer.kernel.assign(self.w / sigma)
+
+    def restore_weights(self):
+        self.layer.kernel.assign(self.w)
