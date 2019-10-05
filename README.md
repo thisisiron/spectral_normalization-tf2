@@ -16,6 +16,8 @@ python main.py
 ## How to use
 1. Sequential API 
 ```
+from sn import SpectralNormalization
+
 model = models.Sequential()
 model.add(SpectralNormalization(layers.Conv2D(32, (3, 3), activation='relu')))
 ...
@@ -23,6 +25,8 @@ model.add(SpectralNormalization(layers.Conv2D(32, (3, 3), activation='relu')))
 
 2. Functional API
 ```
+from sn import SpectralNormalization
+
 inputs = layers.Input(shape=(28,28,1))
 x = SpectralNormalization(layers.Conv2D(32, (3, 3), activation='relu'))(inputs)
 ...
@@ -30,6 +34,8 @@ x = SpectralNormalization(layers.Conv2D(32, (3, 3), activation='relu'))(inputs)
 
 3. Custom Layer Method 
 ```
+from sn import SpectralNormalization
+
 class CustomLayer(tf.keras.layers.Layer):
     def __init__(self):
         self.conv2DSN = SpectralNormalization(layers.Conv2D(32, (3, 3), activation='relu'))
