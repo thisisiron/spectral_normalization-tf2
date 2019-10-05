@@ -1,9 +1,10 @@
 # spectral_normalization-tf2
 Spectral Normalization implemented as Tensorflow 2.0
 
-## Run Test Code
+## TODO
 - [ ] Convert simple conv2d model to DCGAN model
 
+## Run Test Code
 This is currently a test code using a simple image classification model.
 ```
 python main.py
